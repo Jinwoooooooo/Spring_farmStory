@@ -43,7 +43,7 @@ public class UserController {
                     = new UsernamePasswordAuthenticationToken(userDTO.getUid(), userDTO.getPass());
 
             // 사용자 DB 조회
-            Authentication authentication = authenticationManager.authenticate(authToken); // authenticate: DB 조회
+            Authentication authentication = authenticationManager.authenticate(authToken);
             log.info("login...2");
 
             // 인증된 사용자 가져오기
@@ -52,33 +52,31 @@ public class UserController {
 
             log.info("login...3 : " + user);
 
-
             // 토큰 발급(액세스, 리프레쉬)
             String access  = jwtProvider.createToken(user, 1); // 1일
             String refresh = jwtProvider.createToken(user, 7); // 7일
 
-            // 리프레쉬 토큰 DB 저장
+            // 리프레쉬 토큰 DB 저장(생략)
 
             // HttpOnly Cookie 생성
-            ResponseCookie accessTokenCookie = ResponseCookie.from("access", access)
-                                                .httpOnly(true) // HttpOnly 설정(XSS 방지)
-                                                .secure(false)  // Https 보안 프로토콜 적용
-                                                .path("/")      // 쿠키 경로
-                                                .maxAge(Duration.ofDays(1)) // 쿠키 수명
-                                                .build();
+            ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", access)
+                    .httpOnly(true) // httpOnly 설정(XSS 방지)
+                    .secure(false)  // https 보안 프로토콜 적용
+                    .path("/")      // 쿠키 경로
+                    .maxAge(Duration.ofDays(1)) // 쿠키 수명
+                    .build();
 
-            ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh", refresh)
-                                                .httpOnly(true) // HttpOnly 설정(XSS 방지)
-                                                .secure(false)  // Https 보안 프로토콜 적용
-                                                .path("/")      // 쿠키 경로
-                                                .maxAge(Duration.ofDays(7)) // 쿠키 수명
-                                                .build();
+            ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", refresh)
+                    .httpOnly(true) // httpOnly 설정(XSS 방지)
+                    .secure(false)  // https 보안 프로토콜 적용
+                    .path("/")      // 쿠키 경로
+                    .maxAge(Duration.ofDays(7)) // 쿠키 수명
+                    .build();
 
             // 쿠키를 Response 헤더에 추가
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
             headers.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-
 
             // 액세스 토큰 클라이언트 전송
             Map<String, Object> map = new HashMap<>();
@@ -94,20 +92,19 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
         }
     }
-
     @GetMapping("/user/logout")
-    public ResponseEntity logout() {
+    public ResponseEntity logout(){
         // HttpOnly Cookie 생성
-        ResponseCookie accessTokenCookie = ResponseCookie.from("access", "")
-                .httpOnly(true) // HttpOnly 설정(XSS 방지)
-                .secure(false)  // Https 보안 프로토콜 적용
+        ResponseCookie accessTokenCookie = ResponseCookie.from("access_token", "")
+                .httpOnly(true) // httpOnly 설정(XSS 방지)
+                .secure(false)  // https 보안 프로토콜 적용
                 .path("/")      // 쿠키 경로
                 .maxAge(0) // 쿠키 수명
                 .build();
 
-        ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh", "")
-                .httpOnly(true) // HttpOnly 설정(XSS 방지)
-                .secure(false)  // Https 보안 프로토콜 적용
+        ResponseCookie refreshTokenCookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true) // httpOnly 설정(XSS 방지)
+                .secure(false)  // https 보안 프로토콜 적용
                 .path("/")      // 쿠키 경로
                 .maxAge(0) // 쿠키 수명
                 .build();
@@ -134,6 +131,4 @@ public class UserController {
         TermsDTO termsDTO = userService.terms();
         return ResponseEntity.ok(termsDTO);
     }
-
-
 }
